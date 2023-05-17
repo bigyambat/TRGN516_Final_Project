@@ -1,0 +1,179 @@
+➜  ~ mongosh "mongodb+srv://clustertrgn.eyagghm.mongodb.net/ClusterTRGN" --apiVersion 1 --username bambat
+Enter password: **********
+Current Mongosh Log ID:	6445c1535671058925e22ea2
+Connecting to:		mongodb+srv://<credentials>@clustertrgn.eyagghm.mongodb.net/ClusterTRGN?appName=mongosh+1.8.0
+Using MongoDB:		6.0.5 (API Version 1)
+Using Mongosh:		1.8.0
+
+
+
+Creating Collections and Database
+
+
+Atlas atlas-c25k3z-shard-0 [primary] ClusterTRGN> use FinalProject
+switched to db FinalProject
+Atlas atlas-c25k3z-shard-0 [primary] FinalProject> db.createCollection("Clinical_Data")
+{ ok: 1 }
+Atlas atlas-c25k3z-shard-0 [primary] FinalProject> db.createCollection("IDH1")
+{ ok: 1 }
+Atlas atlas-c25k3z-shard-0 [primary] FinalProject> show collections
+Clinical_Data
+IDH1
+
+
+
+
+Query 1: Is there a difference in incidence of Anaplastic Astrocytoma between Males and Females?
+
+
+Atlas atlas-c25k3z-shard-0 [primary] FinalProject> db.Clinical_Data.countDocuments({"Cancer Type Detailed": "Anaplastic Astrocytoma", "Sex": "Male"})
+34
+Atlas atlas-c25k3z-shard-0 [primary] FinalProject> db.Clinical_Data.countDocuments({"Cancer Type Detailed": "Anaplastic Astrocytoma", "Sex": "Female"})
+26
+
+
+
+Query 2: What is the number of patients with Anaplastic Astrocytoma, Oligodendrogliooma, and Oligoastrocytoma with a "TMB (nonsynonymous)" of greater than or equal to 1? 
+
+
+Atlas atlas-c25k3z-shard-0 [primary] FinalProject> db.Clinical_Data.count({"TMB (nonsynonymous)": {$gte: 1}, "Cancer Type Detailed": "Anaplastic Astrocytoma"})
+27
+Atlas atlas-c25k3z-shard-0 [primary] FinalProject> db.Clinical_Data.count({"TMB (nonsynonymous)": {$gte: 1}, "Cancer Type Detailed": "Oligodendroglioma"})
+13
+Atlas atlas-c25k3z-shard-0 [primary] FinalProject> db.Clinical_Data.count({"TMB (nonsynonymous)": {$gte: 1}, "Cancer Type Detailed": "Oligoastrocytoma"})
+21
+
+
+
+
+Query 3: For the cancer types (Oligoastrocytoma, Oligodendroglioma, and Anaplastic Astrocytoma), what is the average value for the “Fraction Genome Altered” column for each of the cancer types?
+
+
+Updated value of Fraction Genome Column from string to float
+
+
+db.Clinical_Data.updateMany(
+  {},
+  [{$set: {"Fraction Genome Altered": { $toDouble: "$Fraction Genome Altered" }}}])
+
+
+Actual Query
+
+Atlas atlas-c25k3z-shard-0 [primary] FinalProject> db.Clinical_Data.aggregate([
+...   {
+...     $group: {
+...       _id: "$Cancer Type Detailed",
+...       avgFractionGenomeAltered: { $avg: "$Fraction Genome Altered" }
+...     }
+...   }
+... ])
+
+[
+  {
+    _id: 'Anaplastic Astrocytoma', avgFractionGenomeAltered: 0.16760666666666665
+  },
+  { _id: 'Oligoastrocytoma', avgFractionGenomeAltered: 0.0939 },
+  { _id: 'Oligodendroglioma', avgFractionGenomeAltered: 0.106325 }
+
+]
+
+
+Query 4: For the cancer types (Oligoastrocytoma, Oligodendroglioma, and Anaplastic Astrocytoma), what is the average value for the “Fraction Genome Altered” column for each of the cancer types?
+
+
+Greater than 50:
+
+Atlas atlas-c25k3z-shard-0 [primary] FinalProject> db.IDH1.aggregate([
+...   { $match: { "Cancer Type Detailed": "Anaplastic Astrocytoma", "Diagnosis Age": { $gte: 50 } } },
+...   { $group: { _id: null, avg_allele_freq: { $avg: "$Allele Freq (T)" } } }
+... ])
+[ { _id: null, avg_allele_freq: 0.3271428571428571 } ]
+
+
+Less than 50:
+
+Atlas atlas-c25k3z-shard-0 [primary] FinalProject> db.IDH1.aggregate([
+...   { $match: { "Cancer Type Detailed": "Anaplastic Astrocytoma", "Diagnosis Age": { $lt: 50 } } },
+...   { $group: { _id: null, avg_allele_freq: { $avg: "$Allele Freq (T)" } } }
+... ])
+[ { _id: null, avg_allele_freq: 0.3403225806451613 }
+
+
+
+
+
+Query 5: What are the counts for each option in the First Symptom Longest Duration field for each of the 3 cancer types?
+
+
+
+Atlas atlas-c25k3z-shard-0 [primary] FinalProject> db.Clinical_Data.aggregate([
+... { $match: { "First symptom longest duration": { $in: ["0 - 30 Days", "31 - 90 Days", "91 - 180 Days", "> 181 Days"] } } },
+... { $group: { _id: { First_Symptom_Longest_Duration: "$First symptom longest duration", cancer: "$Cancer Type Detailed" }, count: { $sum: 1 } } },
+... { $project: { First_Symptom_Longest_Duration: "$_id.First_Symptom_Longest_Duration", cancer: "$_id.cancer", count: 1, _id: 0 }
+... }])
+[
+  {
+    count: 5,
+    First_Symptom_Longest_Duration: '31 - 90 Days',
+    cancer: 'Anaplastic Astrocytoma'
+  },
+  {
+    count: 15,
+    First_Symptom_Longest_Duration: '> 181 Days',
+    cancer: 'Oligodendroglioma'
+  },
+  {
+    count: 8,
+    First_Symptom_Longest_Duration: '> 181 Days',
+    cancer: 'Oligoastrocytoma'
+  },
+  {
+    count: 6,
+    First_Symptom_Longest_Duration: '91 - 180 Days',
+    cancer: 'Anaplastic Astrocytoma'
+  },
+  {
+    count: 25,
+    First_Symptom_Longest_Duration: '0 - 30 Days',
+    cancer: 'Oligodendroglioma'
+  },
+  {
+    count: 11,
+    First_Symptom_Longest_Duration: '> 181 Days',
+    cancer: 'Anaplastic Astrocytoma'
+  },
+  {
+    count: 6,
+    First_Symptom_Longest_Duration: '91 - 180 Days',
+    cancer: 'Oligoastrocytoma'
+  },
+  {
+    count: 12,
+    First_Symptom_Longest_Duration: '31 - 90 Days',
+    cancer: 'Oligoastrocytoma'
+  },
+  {
+    count: 5,
+    First_Symptom_Longest_Duration: '91 - 180 Days',
+    cancer: 'Oligodendroglioma'
+  },
+  {
+    count: 32,
+    First_Symptom_Longest_Duration: '0 - 30 Days',
+    cancer: 'Anaplastic Astrocytoma'
+  },
+  {
+    count: 37,
+    First_Symptom_Longest_Duration: '0 - 30 Days',
+    cancer: 'Oligoastrocytoma'
+  },
+  {
+    count: 9,
+    First_Symptom_Longest_Duration: '31 - 90 Days',
+    cancer: 'Oligodendroglioma'
+  }
+]
+
+
+
+
