@@ -7,8 +7,8 @@ This final project consists in building a database (i.e., SQL, Mongo) to query c
 General Workflow:
 
 1. Create a MongoDB database 
-2. Make five queries exploring your dataset (20pts)
-3. Build an interactive web application (apps) with R shinny (20 pts), feel free to use any of the templates reviewed in class.
+2. Make five queries exploring your dataset
+3. Build an interactive web application with R shinny, feel free to use any of the templates reviewed in class
 
 # Database Information and Objective
 
