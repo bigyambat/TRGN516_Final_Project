@@ -1,8 +1,14 @@
-# cBioPortal Dataset
+# MongoDB Analysis using A cBioPortal Dataset on Oligoastrocytoma, Oligodendroglioma, and Anaplastic Astrocytoma
 
 # Introduction
 
-MongoDB will be the primary database used to make queries on the data. 
+This final project consists in building a database (i.e., SQL, Mongo) to query clinical & genomic data and creating a R shiny application. In my case, MongoDB will be the primary database used to make queries on the data. 
+
+General Workflow:
+
+1. Create a MongoDB database 
+2. Make five queries exploring your dataset (20pts)
+3. Build an interactive web application (apps) with R shinny (20 pts), feel free to use any of the templates reviewed in class.
 
 # Database Information and Objective
 
@@ -347,28 +353,3 @@ Anaplastic Astrocytoma has the highest Allele Frequency for greater than >181 Da
 Cerami et al. The cBio Cancer Genomics Portal: An Open Platform for Exploring Multidimensional Cancer Genomics Data. Cancer Discovery. May 2012 2; 401. [PubMed](https://www.ncbi.nlm.nih.gov/pubmed/22588877).
 
 Gao et al. Integrative analysis of complex cancer genomics and clinical profiles using the cBioPortal. Sci. Signal. 6, pl1 (2013). [PubMed](https://www.ncbi.nlm.nih.gov/pubmed/23550210).
-
-- Title: cBioPortal Dataset
-    - Description
-        - Discusses the process of importing and querying data from the cBioPortal dataset
-    - Content
-        - Overview
-            - Defines purpose of cBioPortal dataset
-        - Importing Data
-            - Provides command for importing data
-        - Queries
-            - Query #1
-                - Investigates incidence of Anaplastic Astrocytoma between Males and Females
-            - Query #2
-                - Examines number of patients with Anaplastic Astrocytoma, Oligodendroglioma, and Oligoastrocytoma with a "TMB (nonsynonymous)" of greater than or equal to 1
-            - Query #3
-                - Determines average value of “Fraction Genome Altered” column for each of the 3 cancer types
-            - Query #4
-                - Analyzes average allele frequencies for Anaplastic Astrocytoma for those that had a diagnosis age above or below 50
-            - Query #5
-                - Provides counts for each option in the First Symptom Longest Duration field for each of the 3 cancer types
-        - RShiny App
-            - Provides a visual representation of Query #3 and #5
-    - References
-        - Provides reference links for sources used in document
-        - Includes screenshots of the RShiny App
